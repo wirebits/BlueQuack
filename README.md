@@ -9,6 +9,8 @@ A classic bluetooth-controlled USB Rubber Ducky clone built with ESP32 boards.
 - Minimal Setup.
 - Simply controlled by Serial Console.
 - Execute payloads by just sending appropiate commands.
+- LED status for check connection with BlueQuack.
+- List and view payloads on serial console.
 
 # 👍Recommended
 - Use those ESP32 boards which has at least `4MB` flash memory.
@@ -72,7 +74,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 2. Write your payload in it.
 3. Put Micro SD Card in Micro SD Card Reader and plug into PC/Laptop.
 4. When saving the file, select Micro SD Card.
-5. Name the payload as `payload1`, `payload2` etc.
+5. Name the payload as `payload-1`, `payload-2` etc.
    - It is saved by default as .txt files.
 
 # 🏃🏻‍♂️Run `BlueQuack`
@@ -81,8 +83,7 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 3. Select baud rate to `115200`.
 4. Click on `Connect` button.
 5. In pop-up, select your device.
-6. To execute payloads, type the command : `payload X` where `X` is the payload number.
-7. Hit Enter.
+6. Type `help` and hit enter to get list of supported commands.
 
 # 💡Mnemonic Table
 | Mnemonics | Description | Example  |
