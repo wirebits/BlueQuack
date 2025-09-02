@@ -15,11 +15,25 @@ A classic bluetooth-controlled USB Rubber Ducky clone built with ESP32 board.
 - Use SD cards which is `FAT32` formatted and at least `4GB` and upto `16GB`.
 
 # 📦Requirements
-- `1` ESP32 Board
+- `1` NodeMCU ESP-32S V1.1 38-Pins
 - `1` Micro SD Card Module (3.3V / 5V)
 - `1` SD Card
 - `1` Micro SD Card Reader
 - `1` Micro-B USB / Type-C USB Cable with data transfer support
+
+# 🗒️Note
+-  Micro SD Card Module comes in two variants : `3.3V` and `5V`.
+![Different Types of Micro SD Card Modules](https://github.com/user-attachments/assets/aa9a8578-88be-4c3d-bad2-5eb2cf2d22e7)
+
+# 🔌Pinout Table
+| NODEMCU ESP-32S | Micro SD Card Module (3.3V/5V) |
+|-----------------|--------------------------------|
+| 3.3V/5V         | VCC                            |
+| GND             | GND                            |
+| GPIO19          | MISO                           |
+| GPIO23          | MOSI                           |
+| GPIO18          | SCK                            |
+| GPIO5           | CS                             |
 
 # ⚙️Setup Arduino
 1. Download `Arduino IDE 2.X.X` from [here](https://www.arduino.cc/en/software/) according to your Operating System.
