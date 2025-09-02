@@ -76,7 +76,13 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
    - It is saved by default as .txt files.
 
 # 🏃🏻‍♂️Run `BlueQuack`
-1. Coonect
+1. Connect bluetooth device named `BlueQuack` to any Mobile/PC/Laptop via bluetooth.
+2. Open Serial Console from [here](https://wirebits.github.io/SerialConsole/).
+3. Select baud rate to `115200`.
+4. Click on `Connect` button.
+5. In pop-up, select your device.
+6. To execute payloads, type the command : `payload X` where `X` is the payload number.
+7. Hit Enter.
 
 # 💡Mnemonic Table
 | Mnemonics | Description | Example  |
