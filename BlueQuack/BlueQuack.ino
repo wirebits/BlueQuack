@@ -9,67 +9,20 @@
 #include "SPI.h"
 #include <BleKeyboard.h>
 
+#define SD_CS 5
+File scriptFile;
+const int ledPin = 2;
+
 char keyboard_name[] = "BlueQuack";
 BleKeyboard bleKeyboard(keyboard_name, "Espressif", 100);
 
-#define SD_CS 5
-File scriptFile;
-
-char toLowerCase(char keyChar) {
-  return (keyChar >= 'A' && keyChar <= 'Z') ? keyChar + ('a' - 'A') : keyChar;
-}
-
-void setup() {
-  Serial.begin(115200);
-  bleKeyboard.begin();
-
-  Serial.println("Initializing SD card...");
-  if (!SD.begin(SD_CS)) {
-    Serial.println("Card Mount Failed");
-    return;
-  }
-
-  if (SD.cardType() == CARD_NONE) {
-    Serial.println("No SD card attached");
-    return;
-  }
-
-  Serial.println("SD card ready.");
-  listDir(SD, "/", 0);
-
-  Serial.println("Waiting for serial commands...");
-  Serial.println("Example: payload 1");
-}
-
-void loop() {
-  if (Serial.available()) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-
-    if (command.startsWith("payload ")) {
-      String num = command.substring(8);
-      String filename = "/payload" + num + ".txt";
-      Serial.print("Executing: ");
-      Serial.println(filename);
-
-      if (SD.exists(filename)) {
-        runPayload(filename);
-      } else {
-        Serial.println("File not found.");
-      }
-    }
-  }
-}
-
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
-  Serial.printf("Listing directory: %s\n", dirname);
-
+  Serial.printf("[*] Listing directory: %s\n", dirname);
   File root = fs.open(dirname);
   if (!root || !root.isDirectory()) {
-    Serial.println("Failed to open directory");
+    Serial.println("[!] Failed to open directory!");
     return;
   }
-
   File file = root.openNextFile();
   while (file) {
     if (file.isDirectory()) {
@@ -89,10 +42,9 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
 void runPayload(String path) {
   File scriptFile = SD.open(path);
   if (!scriptFile) {
-    Serial.println("Failed to open payload file");
+    Serial.println("[!] Failed to open payload file!");
     return;
   }
-
   String line = "";
   while (scriptFile.available()) {
     char m = scriptFile.read();
@@ -107,11 +59,25 @@ void runPayload(String path) {
   scriptFile.close();
 }
 
+void viewFile(String path) {
+  File file = SD.open(path);
+  if (!file) {
+    Serial.println("[!] Failed to open file!");
+    return;
+  }
+  Serial.println("------------------------------");
+  while (file.available()) {
+    Serial.write(file.read());
+  }
+  Serial.println("\n------------------------------");
+  Serial.println("[*] End of Payload!");
+  file.close();
+}
+
 void scriptFileLines(String lines) {
   int space_1 = lines.indexOf(" ");
   String cmd = (space_1 == -1) ? lines : lines.substring(0, space_1);
   String arg = (space_1 == -1) ? "" : lines.substring(space_1 + 1);
-
   if (cmd == "TYPE") {
     bleKeyboard.print(arg);
   } else if (cmd == "WAIT") {
@@ -120,6 +86,10 @@ void scriptFileLines(String lines) {
     pressKeys(lines);
   }
   bleKeyboard.releaseAll();
+}
+
+char toLowerCase(char keyChar) {
+  return (keyChar >= 'A' && keyChar <= 'Z') ? keyChar + ('a' - 'A') : keyChar;
 }
 
 void pressKeys(String keys) {
@@ -149,16 +119,79 @@ void pressKey(String b) {
     {"F9", KEY_F9}, {"F10", KEY_F10}, {"F11", KEY_F11}, {"F12", KEY_F12},
     {"SPACE", ' '}
   };
-
   if (b.length() == 1) {
     bleKeyboard.press(toLowerCase(b[0]));
     return;
   }
-
   for (auto& k : keyMap) {
     if (b.equals(k.name)) {
       bleKeyboard.press(k.key);
       return;
+    }
+  }
+}
+
+void showHelp() {
+  Serial.println("\nAvailable Commands:");
+  Serial.println("  payload N   - Run payload-N.txt from SD card (N = number)");
+  Serial.println("  view N      - Show contents of payload-N.txt");
+  Serial.println("  list        - Show all payload files in SD card");
+  Serial.println("  help        - Show this help message\n");
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+  bleKeyboard.begin();
+  Serial.println("[*] Initializing SD card...");
+  if (!SD.begin(SD_CS)) {
+    Serial.println("[!] Card Mount Failed!");
+    return;
+  }
+  if (SD.cardType() == CARD_NONE) {
+    Serial.println("[!] No SD card attached!");
+    return;
+  }
+  Serial.println("[*] SD card ready!");
+}
+
+void loop() {
+  if (bleKeyboard.isConnected()) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW);
+  }
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    if (command.startsWith("payload ")) {
+      String num = command.substring(8);
+      String filename = "/payload-" + num + ".txt";
+      Serial.print("[*] Executing: ");
+      Serial.println(filename);
+      if (SD.exists(filename)) {
+        runPayload(filename);
+      } else {
+        Serial.println("[!] File not found!");
+      }
+    } 
+    else if (command.startsWith("view ")) {
+      String num = command.substring(5);
+      String filename = "/payload-" + num + ".txt";
+      Serial.print("[*] Viewing: ");
+      Serial.println(filename);
+      if (SD.exists(filename)) {
+        viewFile(filename);
+      } else {
+        Serial.println("[!] File not found!");
+      }
+    }
+    else if (command == "help") {
+      showHelp();
+    }
+    else if (command == "list") {
+      listDir(SD, "/", 0);
     }
   }
 }
