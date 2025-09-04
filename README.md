@@ -1,7 +1,5 @@
 <img width="2048" height="2048" alt="BlueQuack" src="https://github.com/user-attachments/assets/ffb8fb15-a31c-4893-969e-551a7ba11955" />
 
-# The project is under development.
-
 # 🦆BlueQuack
 A classic bluetooth-controlled USB Rubber Ducky clone built with ESP32 boards.
 
@@ -58,6 +56,31 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
     - To verify, Go to `Sketch` → `Include Library` and check the library name under `Contributed libraries` section.
     - If it is here, then it is successfully added.
 12. Done! Arduino IDE with required boards and libraries is ready.
+
+# ⚙️Setup using ESP Web Flasher
+1. Open Adafruit ESP Web Flasher from [here](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/).
+2. Set the Baud Rate to `115200 Baud`.
+3. Connect `ESP32` with a USB cable and then to the PC/Laptop.
+4. Press and hold the `BOOT` button.
+5. Click on `Connect` button.
+6. Select your Device COM Port in the Pop-Up Window.
+7. Release the `BOOT` button.
+   - When connected successfully, then it show this <img width="386" height="217" alt="Adafruit ESP Web Flasher" src="https://github.com/user-attachments/assets/47b8888e-25d2-4a29-ab6d-25055cf3a033" />
+8. Click on `Erase` button.
+   - Wait for sometimes to successfully erased.
+9. Download `3` files from Releases.
+    - The files are :
+      1. `bootloader.bin`
+      2. `partitions.bin`
+      3. `bluequack.bin`
+10. Select `bootloader.bin` file with offset `0x1000`.
+11. Select `partitions.bin` file with offset `0x8000`.
+12. Select `bluequack.bin` file with offset `0x10000`.
+13. Click on `Program` button.
+    - Wait for sometimes to successfully programmed.
+14. Press and release the `BOOT` button.
+15. Unplug and plug the `ESP32` on the PC/Laptop.
+16. Done! `BlueQuack` is ready.
 
 # ⚙️Setup `BlueQuack.ino`
 1. Download or Clone the Repository.
