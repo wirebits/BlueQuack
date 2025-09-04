@@ -8,13 +8,17 @@
 #include "SD.h"
 #include "SPI.h"
 #include <BleKeyboard.h>
+#include <Preferences.h>
 
 #define SD_CS 5
 File scriptFile;
 const int ledPin = 2;
 
-char keyboard_name[] = "BlueQuack";
-BleKeyboard bleKeyboard(keyboard_name, "Espressif", 100);
+Preferences prefs;
+String keyboardName;
+BleKeyboard* bleKeyboard;
+
+const char* defaultName = "BlueQuack";
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   Serial.printf("[*] Listing directory: %s\n", dirname);
@@ -39,24 +43,117 @@ void listDir(fs::FS &fs, const char * dirname, uint8_t levels) {
   }
 }
 
+void executeBlock(const String &block) {
+  int start = 0;
+  while (true) {
+    int nl = block.indexOf('\n', start);
+    String line = (nl == -1) ? block.substring(start) : block.substring(start, nl);
+    line.trim();
+    if (line.length() > 0) {
+      scriptFileLines(line);
+    }
+    if (nl == -1) break;
+    start = nl + 1;
+  }
+}
+
 void runPayload(String path) {
-  File scriptFile = SD.open(path);
-  if (!scriptFile) {
+  File f = SD.open(path);
+  if (!f) {
     Serial.println("[!] Failed to open payload file!");
     return;
   }
   String line = "";
-  while (scriptFile.available()) {
-    char m = scriptFile.read();
-    if (m == '\n') {
-      scriptFileLines(line);
+  bool inLoop = false;
+  bool infiniteLoop = false;
+  long loopCount = 0;
+  String loopBody = "";
+  while (f.available()) {
+    char c = f.read();
+    if (c == '\n') {
+      line.trim();
+      if (line.length() > 0) {
+        String u = line; 
+        u.toUpperCase();
+        if (!inLoop) {
+          if (u.startsWith("LOOP")) {
+            int sp = line.indexOf(' ');
+            String nstr = (sp == -1) ? "" : line.substring(sp + 1);
+            nstr.trim();
+            loopCount = nstr.toInt();
+            inLoop = true;
+            infiniteLoop = false;
+            loopBody = "";
+          } 
+          else if (u == "INF") {
+            inLoop = true;
+            infiniteLoop = true;
+            loopBody = "";
+          }
+          else {
+            scriptFileLines(line);
+          }
+        } 
+        else {
+          if (u == "EXIT") {
+            if (infiniteLoop) {
+              while (true) {
+                executeBlock(loopBody);
+                delay(50);
+              }
+            } else {
+              for (long i = 0; i < loopCount; i++) {
+                executeBlock(loopBody);
+              }
+            }
+            inLoop = false;
+            infiniteLoop = false;
+            loopCount = 0;
+            loopBody = "";
+          } else {
+            loopBody += line;
+            loopBody += '\n';
+          }
+        }
+      }
       line = "";
-    } else if ((int)m != 13) {
-      line += m;
+    } else if ((int)c != 13) {
+      line += c;
     }
   }
-  if (line.length() > 0) scriptFileLines(line);
-  scriptFile.close();
+  line.trim();
+  if (line.length() > 0) {
+    String u = line; u.toUpperCase();
+    if (!inLoop) {
+      if (u.startsWith("LOOP") || u == "INF") {
+        return;
+      } else if (u == "EXIT") {
+        return;
+      } else {
+        scriptFileLines(line);
+      }
+    } else {
+      if (u == "EXIT") {
+        if (infiniteLoop) {
+          while (true) {
+            executeBlock(loopBody);
+            delay(50);
+          }
+        } else {
+          for (long i = 0; i < loopCount; i++) {
+            executeBlock(loopBody);
+          }
+        }
+        inLoop = false;
+      } else {
+        return;
+      }
+    }
+  }
+  if (inLoop) {
+    return;
+  }
+  f.close();
 }
 
 void viewFile(String path) {
@@ -70,7 +167,6 @@ void viewFile(String path) {
     Serial.write(file.read());
   }
   Serial.println("\n------------------------------");
-  Serial.println("[*] End of Payload!");
   file.close();
 }
 
@@ -78,14 +174,33 @@ void scriptFileLines(String lines) {
   int space_1 = lines.indexOf(" ");
   String cmd = (space_1 == -1) ? lines : lines.substring(0, space_1);
   String arg = (space_1 == -1) ? "" : lines.substring(space_1 + 1);
-  if (cmd == "TYPE") {
-    bleKeyboard.print(arg);
-  } else if (cmd == "WAIT") {
+  String ucmd = cmd; 
+  ucmd.toUpperCase();
+  if (ucmd == "TYPE") {
+    if (arg.endsWith("-")) {
+      arg.remove(arg.length() - 1);
+      for (int i = 0; i < arg.length(); i++) {
+        bleKeyboard->print(String(arg[i]));
+        delay(30);
+      }
+      bleKeyboard->write(KEY_RETURN);
+    } else {
+      for (int i = 0; i < arg.length(); i++) {
+        bleKeyboard->print(String(arg[i]));
+        delay(30);
+      }
+    }
+  } 
+  else if (ucmd == "WAIT") {
     delay(arg.toInt());
-  } else {
+  } 
+  else if (ucmd == "EXIT" || ucmd == "LOOP") {
+    return;
+  } 
+  else {
     pressKeys(lines);
   }
-  bleKeyboard.releaseAll();
+  bleKeyboard->releaseAll();
 }
 
 char toLowerCase(char keyChar) {
@@ -120,12 +235,12 @@ void pressKey(String b) {
     {"SPACE", ' '}
   };
   if (b.length() == 1) {
-    bleKeyboard.press(toLowerCase(b[0]));
+    bleKeyboard->press(toLowerCase(b[0]));
     return;
   }
   for (auto& k : keyMap) {
-    if (b.equals(k.name)) {
-      bleKeyboard.press(k.key);
+    if (b.equalsIgnoreCase(k.name)) {
+      bleKeyboard->press(k.key);
       return;
     }
   }
@@ -133,17 +248,26 @@ void pressKey(String b) {
 
 void showHelp() {
   Serial.println("\nAvailable Commands:");
-  Serial.println("  payload N   - Run payload-N.txt from SD card (N = number)");
-  Serial.println("  view N      - Show contents of payload-N.txt");
-  Serial.println("  list        - Show all payload files in SD card");
-  Serial.println("  help        - Show this help message\n");
+  Serial.println("  payload N                  - Run payload-N.txt from SD card (N = number)");
+  Serial.println("  view N                     - Show contents of payload-N.txt");
+  Serial.println("  list                       - Show all payload files in SD card");
+  Serial.println("  mute                       - Mute system sound");
+  Serial.println("  unmute                     - Unmute system sound");
+  Serial.println("  name <NEW_KEYBOARD_NAME>   - Change BLE keyboard name and restart");
+  Serial.println("  reset name                 - Reset keyboard name to default and restart");
+  Serial.println("  help                       - Show this help message\n");
 }
 
 void setup() {
   Serial.begin(115200);
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
-  bleKeyboard.begin();
+  prefs.begin("blekbd", false);
+  keyboardName = prefs.getString("kbdName", defaultName);
+  Serial.print("[*] Keyboard Name: ");
+  Serial.println(keyboardName);
+  bleKeyboard = new BleKeyboard(keyboardName.c_str(), "Espressif", 100);
+  bleKeyboard->begin();
   Serial.println("[*] Initializing SD card...");
   if (!SD.begin(SD_CS)) {
     Serial.println("[!] Card Mount Failed!");
@@ -157,7 +281,7 @@ void setup() {
 }
 
 void loop() {
-  if (bleKeyboard.isConnected()) {
+  if (bleKeyboard->isConnected()) {
     digitalWrite(ledPin, HIGH);
   } else {
     digitalWrite(ledPin, LOW);
@@ -186,6 +310,33 @@ void loop() {
       } else {
         Serial.println("[!] File not found!");
       }
+    }
+    else if (command == "mute") {
+      Serial.println("[*] Muting system sound...");
+      bleKeyboard->releaseAll();  
+      bleKeyboard->write(KEY_MEDIA_MUTE);
+    }
+    else if (command == "unmute") {
+      Serial.println("[*] Unmuting system sound...");
+      bleKeyboard->releaseAll();  
+      bleKeyboard->write(KEY_MEDIA_MUTE);
+    }
+    else if (command.startsWith("name ")) {
+      String newName = command.substring(5);
+      newName.trim();
+      if (newName.length() > 0) {
+        prefs.putString("kbdName", newName);
+        Serial.print("[*] Keyboard name set to: ");
+        Serial.println(newName);
+        Serial.println("[*] Restarting ESP32...");
+        ESP.restart();
+      }
+    }
+    else if (command.equalsIgnoreCase("reset name")) {
+      prefs.putString("kbdName", defaultName);
+      Serial.println("[*] Keyboard name reset to default (BlueQuack)");
+      Serial.println("[*] Restarting ESP32...");
+      ESP.restart();
     }
     else if (command == "help") {
       showHelp();
