@@ -90,6 +90,15 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 |-----------|-------------|----------|
 | WAIT      | It add time in the code.<br>Time is in milliseconds.<br>1000 ms = 1 second. | WAIT 1000 |
 | TYPE      | It add text want to type in the code. | TYPE Hello World! |
+| LOOP      | It runs commands for a certain number of times.<br> Synatx is `LOOP number-of-times commands` | LOOP 3<br>TYPE Hello World!<br>EXIT<br><br>LOOP 4<br>TAB<br>EXIT<br><br>LOOP 1<br>CTRL S<br>EXIT<br><br>LOOP 1<br>CTRL SHIFT N<br>EXIT<br> |
+| INF       | It run commans infinitely.<br>Syntax is `INF commands` | INF<br>TYPE Hello World!<br>EXIT<br><br>INF<br>TAB<br>EXIT<br> |
+
+# 🔡Special Symbols
+`-`
+- It is used to put the cursor in the next line.
+- It is only used with TYPE.
+- Example : `TYPE Hello World!-`
+- If TYPE contain any command and then `-` then it run automatically without `ENTER` key.
 
 # 📝Supported Mnemonics
 ## Alphabet Keys
@@ -143,4 +152,18 @@ WAIT 1200
 TYPE hello
 WAIT 1100
 ENTER
+```
+## Open notepad and type Hello World! 6 times in different lines
+```
+WAIT 1000
+GUI R
+WAIT 1000
+TYPE notepad
+WAIT 1000
+ENTER
+WAIT 1000
+LOOP 6
+TYPE Hello World!-
+WAIT 50
+EXIT
 ```
