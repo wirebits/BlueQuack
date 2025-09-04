@@ -11,6 +11,8 @@ A classic bluetooth-controlled USB Rubber Ducky clone built with ESP32 boards.
 - Execute payloads by just sending appropiate commands.
 - LED status for check connection with BlueQuack.
 - List and view payloads on serial console.
+- Update and reset keyboard name for social engineering.
+- Mute and unmute system sounds.
 
 # 👍Recommended
 - Use those ESP32 boards which has at least `4MB` flash memory.
