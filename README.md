@@ -37,7 +37,7 @@ A classic bluetooth-controlled USB Rubber Ducky clone built with ESP32 boards.
 | GPIO18          | SCK                            |
 | GPIO5           | CS                             |
 
-# ⚙️Setup Arduino
+# ⚙️Setup `BlueQuack.ino` by Arduino
 1. Download `Arduino IDE 2.X.X` from [here](https://www.arduino.cc/en/software/) according to your Operating System.
 2. Install it.
 3. Go to `File` → `Preferences` → `Additional Boards Manager URLs`.
@@ -56,8 +56,18 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
     - To verify, Go to `Sketch` → `Include Library` and check the library name under `Contributed libraries` section.
     - If it is here, then it is successfully added.
 12. Done! Arduino IDE with required boards and libraries is ready.
+13. Download or Clone the Repository.
+14. Open the folder and then open `BlueQuack` folder and just double click on `BlueQuack.ino` file.
+   - It opens in Arduino IDE.
+15. Compile the code.
+16. Select the correct board from the `Tools` → `Board` → `esp32`.
+   - It is generally `NodeMCU-32S`.
+17. Select the correct port number of that board.
+18. Upload the code.
+   - Wait for sometime to upload.
+19. Done!
 
-# ⚙️Setup using ESP Web Flasher
+# ⚙️Setup `BlueQuack.ino` using ESP Web Flasher
 1. Open Adafruit ESP Web Flasher from [here](https://adafruit.github.io/Adafruit_WebSerial_ESPTool/).
 2. Set the Baud Rate to `115200 Baud`.
 3. Connect `ESP32` with a USB cable and then to the PC/Laptop.
@@ -81,18 +91,6 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
 14. Press and release the `BOOT` button.
 15. Unplug and plug the `ESP32` on the PC/Laptop.
 16. Done! `BlueQuack` is ready.
-
-# ⚙️Setup `BlueQuack.ino`
-1. Download or Clone the Repository.
-2. Open the folder and then open `BlueQuack` folder and just double click on `BlueQuack.ino` file.
-   - It opens in Arduino IDE.
-3. Compile the code.
-4. Select the correct board from the `Tools` → `Board` → `esp32`.
-   - It is generally `NodeMCU-32S`.
-5. Select the correct port number of that board.
-6. Upload the code.
-   - Wait for sometime to upload.
-7. Done!
 
 # 📄Payload Files
 1. Open Notepad or any other text editor.
