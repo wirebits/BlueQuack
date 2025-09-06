@@ -56,8 +56,9 @@ https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32
     - To verify, Go to `Sketch` → `Include Library` and check the library name under `Contributed libraries` section.
     - If it is here, then it is successfully added.
 12. Done! Arduino IDE with required boards and libraries is ready.
-13. Download or Clone the Repository.
-14. Open the folder and then open `BlueQuack` folder and just double click on `BlueQuack.ino` file.
+13. Download CP210x driver according to your operating system from [here](https://www.silabs.com/software-and-tools/usb-to-uart-bridge-vcp-drivers?tab=downloads).
+14. Download or Clone the Repository.
+15. Open the folder and then open `BlueQuack` folder and just double click on `BlueQuack.ino` file.
    - It opens in Arduino IDE.
 15. Compile the code.
 16. Select the correct board from the `Tools` → `Board` → `esp32`.
