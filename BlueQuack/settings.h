@@ -18,5 +18,4 @@ void setKeyboardName(const String& newName);
 
 void resetKeyboardName();
 
-
 #endif
