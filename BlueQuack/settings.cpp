@@ -1,5 +1,5 @@
 /*
- * Settings Header File
+ * Settings CPP File
  * Author - WireBits
  */
 
@@ -28,4 +28,5 @@ void resetKeyboardName() {
     Serial.println(")");
     Serial.println("[*] Restarting ESP32...");
     ESP.restart();
+
 }
