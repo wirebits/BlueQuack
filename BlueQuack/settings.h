@@ -1,5 +1,5 @@
 /*
- * Settings CPP File
+ * Settings Header File
  * Author - WireBits
  */
 
@@ -17,5 +17,6 @@ String getKeyboardName();
 void setKeyboardName(const String& newName);
 
 void resetKeyboardName();
+
 
 #endif
